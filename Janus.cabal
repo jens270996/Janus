@@ -59,10 +59,16 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules: Parser
+    exposed-modules:
+        AST,
+        Parsing.Parser,
+        Parsing.Implementation.Parser,
+        Interpretation.Interpreter,
+        Interpretation.Implementation.Interpreter,
+        Wellformed
 
     -- Modules included in this library but not exported.
-    other-modules: AST
+    other-modules: Utils.AST, Interpretation.Implementation.Computation
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -71,6 +77,8 @@ library
     build-depends:
         base ^>=4.21.0.0
         , parsec
+        , containers
+        , array
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -94,7 +102,8 @@ executable Janus
     -- Other library packages from which modules are imported.
     build-depends:
         base ^>=4.21.0.0,
-        Janus
+        Janus,
+        optparse-applicative
 
     -- Directories containing source files.
     hs-source-dirs:   app
@@ -127,4 +136,6 @@ test-suite Janus-test
     -- Test dependencies.
     build-depends:
         base ^>=4.21.0.0,
-        Janus
+        Janus,
+        tasty,
+        tasty-hunit

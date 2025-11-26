@@ -1,4 +1,4 @@
-module Parser (parseProgram) where
+module Parsing.Implementation.Parser where
 
 import AST
 import Text.Parsec
@@ -22,13 +22,16 @@ pProgram =
 
 pVariableDeclaration :: Parser VariableDeclaration
 pVariableDeclaration =
-   (VariableDeclaration <$> variableName)
-   <|> (do name <- variableName
-           size <- inBrackets constant 
-           return $ ArrayDeclaration name size)
+    (do name <- variableName
+        index <- optionMaybe $ inBrackets constant
+        case index of
+            Just i -> return $ Right (name,i)
+            Nothing -> return $ Left name
+    ) 
 
 pProcedure :: Parser Procedure
-pProcedure = do procedureId <- identifier
+pProcedure = do keyword "procedure"
+                procedureId <- identifier
                 body <- many1 pStatement
                 return $ Procedure procedureId body
 
@@ -36,29 +39,32 @@ pStatement :: Parser Statement
 pStatement =
    Call <$> (keyword "call" *> identifier)
    <|> Uncall <$> (keyword "uncall" *> identifier)
-   <|> (do v1 <- pVariable
-           symbol "<=>"
-           v2 <- pVariable
-           return $ Swap v1 v2)
    <|> Skip <$ keyword "skip"
    <|> (do keyword "from"
            e1 <- pExpression
            keyword "do"
-           s1 <- pStatement
+           s1 <- many1 pStatement
            keyword "loop"
-           s2 <- pStatement
+           s2 <- many1 pStatement
            keyword "until"
            e2 <- pExpression
            return $ Loop e1 s1 s2 e2)
    <|> (do keyword "if"
            e1 <- pExpression
            keyword "then"
-           s1 <- pStatement
+           s1 <- many1 pStatement
            keyword "else"
-           s2 <- pStatement
+           s2 <- many1 pStatement
            keyword "fi"
            e2 <- pExpression
            return $ Conditional e1 s1 s2 e2)
+    <|> try
+        (do v1 <- pVariable
+            symbol "<"
+            symbol "="
+            symbol ">"
+            v2 <- pVariable
+            return $ Swap v1 v2)
    <|> (do x <- pVariable
            op <- pReversibleOperator
            symbol "="
@@ -141,11 +147,14 @@ identifier = lexeme . try $
                    if (c:cs) `elem` keywords then fail "keyword used as identifier" else return (c:cs)
 
 pVariable :: Parser Variable
-pVariable = 
-   (Variable <$> variableName)
-   <|> (do name <- variableName
-           index <- inBrackets pExpression
-           return $ ArrayIndex name index)
+pVariable =
+        (do name <- variableName
+            index <- optionMaybe $ inBrackets pExpression
+            case index of
+                Just i -> return $ ArrayIndex name i
+                Nothing -> return $ Variable name
+        ) 
+   
 
 variableName :: Parser VariableName
 variableName =  lexeme . try $

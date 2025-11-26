@@ -1,0 +1,307 @@
+rotors[78] turnovers[3] plugboard[26] rotations[3] reflector[26] c i c'
+
+// Rotor rotations: 0-25
+// Turnovers: 0-25
+
+// Input: configuration and pressed key
+// Output: updated configuration and encrypted key
+procedure enigma
+	call update_config
+	call encode_letter
+
+// Input: configuration and pressed key
+// Output: configuration and key encrypted under configuration
+// Should be time-symmetric
+procedure encode_letter
+	call apply_plugboard
+	call apply_rotors
+	
+	// reflector
+	c' += reflector[c]
+	c' <=> c
+	c' -= reflector[c]
+	uncall apply_rotors
+	uncall apply_plugboard
+
+procedure update_config
+	if rotations[1] = turnovers[1]
+	then call rotate_all
+	else if rotations[0] = turnovers[0]
+		then call rotate_right_and_middle
+		else call rotate // right
+		fi rotations[0]-1 % 26 = turnovers[0]
+	fi rotations[1]-1 % 26 = turnovers[1]
+
+procedure rotate
+	rotations[i] += 1
+	if rotations[i] = 26
+	then rotations[i] -= 26
+	else skip
+	fi rotations[i] = 0
+
+procedure rotate_right_and_middle
+	call rotate
+	i += 1
+	call rotate
+	i -= 1
+
+procedure rotate_all
+	call rotate
+	i += 1
+	call rotate
+	i += 1
+	call rotate
+	i -= 2
+	
+// For letters that are not plugged, we have plugboard[c] = c
+procedure apply_plugboard
+	c' += plugboard[c]
+	c' <=> c
+	c' -= plugboard[c]
+  
+procedure apply_rotors
+	from i = 0
+	do skip
+	loop call apply_rotor
+	     i += 1
+	until i = 3
+	
+procedure apply_rotor
+	call cyclic_perm
+	c' += rotors[c+i*26]
+	c' <=> c
+	from rotors[c'+i*26] = c
+	do skip
+	loop c' -= 1
+	until c' = 0
+	uncall cyclic_perm
+
+procedure cyclic_perm
+	c += rotations[i]
+	if c >= 26
+	then c -= 26
+	else skip
+	fi c < rotations[i]
+	
+procedure main
+	rotations[0] += 16
+	//plugboard[0] += 7
+	c += 8
+	
+	
+	
+	call initialize_rotor_1
+	call initialize_rotor_2
+	call initialize_rotor_3
+	call initialize_reflector
+	call initialize_plugboard
+	
+	call enigma
+	
+	uncall initialize_plugboard
+	uncall initialize_reflector
+	uncall initialize_rotor_3
+	uncall initialize_rotor_2
+	uncall initialize_rotor_1
+	
+procedure initialize_rotor_1
+	turnovers[0] += 16 // Q
+	rotors[0] += 4
+	rotors[1] += 10
+	rotors[2] += 12
+	rotors[3] += 5
+	rotors[4] += 11
+	rotors[5] += 6
+	rotors[6] += 3
+	rotors[7] += 16
+	rotors[8] += 21
+	rotors[9] += 25
+	rotors[10] += 13
+	rotors[11] += 19
+	rotors[12] += 14
+	rotors[13] += 22
+	rotors[14] += 24
+	rotors[15] += 7
+	rotors[16] += 23
+	rotors[17] += 20
+	rotors[18] += 18
+	rotors[19] += 15
+	rotors[20] += 0
+	rotors[21] += 8
+	rotors[22] += 1
+	rotors[23] += 17
+	rotors[24] += 2
+	rotors[25] += 9
+	
+procedure initialize_rotor_2
+	turnovers[1] += 4 // E
+	rotors[26+0] += 0
+	rotors[26+1] += 9
+	rotors[26+2] += 3
+	rotors[26+3] += 10
+	rotors[26+4] += 18
+	rotors[26+5] += 9
+	rotors[26+6] += 17
+	rotors[26+7] += 20
+	rotors[26+8] += 23
+	rotors[26+9] += 1
+	rotors[26+10] += 11
+	rotors[26+11] += 7
+	rotors[26+12] += 22
+	rotors[26+13] += 19
+	rotors[26+14] += 12
+	rotors[26+15] += 2
+	rotors[26+16] += 16
+	rotors[26+17] += 6
+	rotors[26+18] += 25
+	rotors[26+19] += 13
+	rotors[26+20] += 15
+	rotors[26+21] += 24
+	rotors[26+22] += 5
+	rotors[26+23] += 21
+	rotors[26+24] += 14
+	rotors[26+25] += 4
+	
+procedure initialize_rotor_3
+	turnovers[2] += 21 // V
+	rotors[52+0] += 1
+	rotors[52+1] += 3
+	rotors[52+2] += 5
+	rotors[52+3] += 7
+	rotors[52+4] += 9
+	rotors[52+5] += 11
+	rotors[52+6] += 2
+	rotors[52+7] += 15
+	rotors[52+8] += 17
+	rotors[52+9] += 19
+	rotors[52+10] += 23
+	rotors[52+11] += 21
+	rotors[52+12] += 25
+	rotors[52+13] += 13
+	rotors[52+14] += 24
+	rotors[52+15] += 4
+	rotors[52+16] += 8
+	rotors[52+17] += 22
+	rotors[52+18] += 6
+	rotors[52+19] += 0
+	rotors[52+20] += 10
+	rotors[52+21] += 12
+	rotors[52+22] += 20
+	rotors[52+23] += 18
+	rotors[52+24] += 16
+	rotors[52+25] += 14
+	
+//procedure initialize_rotor_4
+//	turnovers[3] += 9 // J
+//	rotors[78+0] += 4
+//	rotors[78+1] += 18
+//	rotors[78+2] += 14
+//	rotors[78+3] += 21
+//	rotors[78+4] += 15
+//	rotors[78+5] += 25
+//	rotors[78+6] += 9
+//	rotors[78+7] += 0
+//	rotors[78+8] += 24
+//	rotors[78+9] += 16
+//	rotors[78+10] += 20
+//	rotors[78+11] += 8
+//	rotors[78+12] += 17
+//	rotors[78+13] += 7
+//	rotors[78+14] += 23
+//	rotors[78+15] += 11
+//	rotors[78+16] += 13
+//	rotors[78+17] += 5
+//	rotors[78+18] += 19
+//	rotors[78+19] += 6
+//	rotors[78+20] += 10
+//	rotors[78+21] += 3
+//	rotors[78+22] += 2
+//	rotors[78+23] += 12
+//	rotors[78+24] += 22
+//	rotors[78+25] += 1
+//
+//procedure initialize_rotor_5
+//	turnovers[4] += 25 // Z
+//	rotors[104+0] += 21
+//	rotors[104+1] += 25
+//	rotors[104+2] += 1
+//	rotors[104+3] += 17
+//	rotors[104+4] += 6
+//	rotors[104+5] += 8
+//	rotors[104+6] += 19
+//	rotors[104+7] += 24
+//	rotors[104+8] += 20
+//	rotors[104+9] += 15
+//	rotors[104+10] += 18
+//	rotors[104+11] += 3
+//	rotors[104+12] += 13
+//	rotors[104+13] += 7
+//	rotors[104+14] += 11
+//	rotors[104+15] += 23
+//	rotors[104+16] += 0
+//	rotors[104+17] += 22
+//	rotors[104+18] += 12
+//	rotors[104+19] += 9
+//	rotors[104+20] += 16
+//	rotors[104+21] += 14
+//	rotors[104+22] += 5
+//	rotors[104+23] += 4
+//	rotors[104+24] += 2
+//	rotors[104+25] += 10
+	
+procedure initialize_reflector
+// UKW-B    YRUHQSLDPXNGOKMIEBFZCWVJAT
+	reflector[0] += 24
+	reflector[1] += 17
+	reflector[2] += 20
+	reflector[3] += 7
+	reflector[4] += 16
+	reflector[5] += 18
+	reflector[6] += 11
+	reflector[7] += 3
+	reflector[8] += 15
+	reflector[9] += 23
+	reflector[10] += 13
+	reflector[11] += 6
+	reflector[12] += 14
+	reflector[13] += 10
+	reflector[14] += 12
+	reflector[15] += 8
+	reflector[16] += 4
+	reflector[17] += 1
+	reflector[18] += 5
+	reflector[19] += 25
+	reflector[20] += 2
+	reflector[21] += 22
+	reflector[22] += 21
+	reflector[23] += 9
+	reflector[24] += 0
+	reflector[25] += 19
+
+procedure initialize_plugboard
+	plugboard[0] += 0
+	plugboard[1] += 1
+	plugboard[2] += 2
+	plugboard[3] += 3
+	plugboard[4] += 4
+	plugboard[5] += 5
+	plugboard[6] += 6
+	plugboard[7] += 7
+	plugboard[8] += 8
+	plugboard[9] += 9
+	plugboard[10] += 10
+	plugboard[11] += 11
+	plugboard[12] += 12
+	plugboard[13] += 13
+	plugboard[14] += 14
+	plugboard[15] += 15
+	plugboard[16] += 16
+	plugboard[17] += 17
+	plugboard[18] += 18
+	plugboard[19] += 19
+	plugboard[20] += 20
+	plugboard[21] += 21
+	plugboard[22] += 22
+	plugboard[23] += 23
+	plugboard[24] += 24
+	plugboard[25] += 25
