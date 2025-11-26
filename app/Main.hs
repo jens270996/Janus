@@ -4,7 +4,7 @@ import Parsing.Parser (parseProgram,ParseResult)
 import Control.Monad
 import Options.Applicative
 import System.Exit (die)
-import Interpretation.Interpreter (interpretProgram)
+import Interpretation.Interpreter (interpretProgram, printStore)
 import Wellformed (wellformedProgram)
 -- import ASTPrinting.Printer (printProgram, printProgramOrdered)
 import AST
@@ -13,7 +13,7 @@ data Options = Interpret InterpretOptions
 data InterpretOptions = InterpretOptions
   {
     programFile :: String
-  -- , inputFile :: String
+  , inputFile :: Maybe String
   , verbose :: Bool
   }
 
@@ -21,8 +21,8 @@ data InterpretOptions = InterpretOptions
 interpretParser :: Parser Options
 interpretParser = Interpret <$> (InterpretOptions
                <$> argument str (metavar "<Program file>")
-              --  <*> argument str (metavar "<Input file>")
-               <*> flag True False (long "verbose"
+               <*> (optional $ strOption (long "input" <> short 'i' <> metavar "<Input file>")) 
+               <*> switch (long "verbose"
                            <> short 'v'
                            <> help "Print additional information for debugging purposes.")
               )
@@ -31,7 +31,7 @@ interpretParser = Interpret <$> (InterpretOptions
 optParser :: Parser Options
 optParser = hsubparser
               ( command "interpret" (info interpretParser
-                (progDesc "Interpret a TSL program"))
+                (progDesc "Interpret a Janus program"))
               )
 
 optsParser :: ParserInfo Options
@@ -61,7 +61,7 @@ runProgram :: Program -> IO ()
 runProgram program =
   case wellformedProgram program of
       Nothing -> case interpretProgram program of
-                    Right c -> putStrLn $ "Output: " ++ show c
+                    Right c -> putStrLn $ "Output: " ++ printStore c
                     Left e -> putStrLn $ "Error during evaluation: " ++ e
       Just e -> putStrLn $ "Program is not wellformed: " ++ e
 

@@ -1,3 +1,4 @@
-module Interpretation.Interpreter(interpretProgram) where
+module Interpretation.Interpreter(interpretProgram, printStore) where
 
 import Interpretation.Implementation.Interpreter
+import Interpretation.Implementation.Computation

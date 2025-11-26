@@ -8,6 +8,7 @@ import Utils.AST
 
 type ComputationError = Either String
 type VariableStore = (Map.Map VariableName Value, Map.Map VariableName (Array Length Value))
+
 type ProcedureStore = Map.Map Identifier Procedure
 type CallStack = [String]
 
@@ -109,7 +110,15 @@ printCallStack :: CallStack -> String
 printCallStack cs = "[" ++ (concatMap (++ ",\n\n") . reverse $ cs) ++ "]\n"
 
 printStore :: VariableStore -> String
-printStore = show
+printStore (scalars,arrays) =
+    "Program store: \n"
+    ++
+    Map.foldrWithKey  (\k a str ->  (k ++ "=" ++ show a ++ "\n") ++ str) "" scalars
+    ++
+    Map.foldrWithKey  (\k a str ->  k ++ "[" ++ show ((snd . bounds $ a)+1) ++"]=" ++ printArray a ++ "\n" ++ str) "" arrays
+
+printArray :: (Show b) => Array a b -> String
+printArray = show . elems
 
 getEnvironmentC :: Computation VariableStore
 getEnvironmentC = Computation (\_ vars cs -> Right (vars,vars,cs))
