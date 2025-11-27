@@ -1,6 +1,6 @@
-rotors[78] turnovers[3] plugboard[26] rotations[3] reflector[26] c i c'
+rotors[78] turnovers[3] plugboard[26] positions[3] reflector[26] c i c'
 
-// Rotor rotations: 0-25
+// Rotor positions: 0-25
 // Turnovers: 0-25
 
 // Input: configuration and pressed key
@@ -24,20 +24,20 @@ procedure encode_letter
 	uncall apply_plugboard
 
 procedure update_config
-	if rotations[1] = turnovers[1]
+	if positions[1] = turnovers[1]
 	then call rotate_all
-	else if rotations[0] = turnovers[0]
+	else if positions[0] = turnovers[0]
 		then call rotate_right_and_middle
 		else call rotate // right
-		fi rotations[0]-1 % 26 = turnovers[0]
-	fi rotations[1]-1 % 26 = turnovers[1]
+		fi positions[0]-1 % 26 = turnovers[0]
+	fi positions[1]-1 % 26 = turnovers[1]
 
 procedure rotate
-	rotations[i] += 1
-	if rotations[i] = 26
-	then rotations[i] -= 26
+	positions[i] += 1
+	if positions[i] = 26
+	then positions[i] -= 26
 	else skip
-	fi rotations[i] = 0
+	fi positions[i] = 0
 
 procedure rotate_right_and_middle
 	call rotate
@@ -77,14 +77,14 @@ procedure apply_rotor
 	uncall cyclic_perm
 
 procedure cyclic_perm
-	c += rotations[i]
+	c += positions[i]
 	if c >= 26
 	then c -= 26
 	else skip
-	fi c < rotations[i]
+	fi c < positions[i]
 	
 procedure main
-	rotations[0] += 16
+	positions[0] += 16
 	//plugboard[0] += 7
 	c += 8
 	
